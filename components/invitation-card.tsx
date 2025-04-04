@@ -18,6 +18,8 @@ export default function InvitationCard() {
   const [isPlaying, setIsPlaying] = useState(false) // Start with audio paused
   const [audioInitialized, setAudioInitialized] = useState(false) // Track if audio has been initialized
   const [showConfetti, setShowConfetti] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState("")
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -139,6 +141,41 @@ export default function InvitationCard() {
     setShowConfetti(true)
     setTimeout(() => setShowConfetti(false), 3000)
   }
+
+  // Function to share the invitation
+  const shareInvitation = async () => {
+    const shareData = {
+      title: 'Undangan Aqiqah Fadhila Aisya Zaviera',
+      text: 'Bismillah, Kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara Aqiqah putri kami.',
+      url: window.location.href,
+    };
+
+    try {
+      // Trigger confetti first
+      triggerConfetti();
+
+      // Check if Web Share API is available
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setToastMessage("Berhasil membagikan undangan");
+        setShowToast(true);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        setToastMessage("Link undangan disalin ke clipboard");
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      setToastMessage("Gagal membagikan undangan");
+      setShowToast(true);
+    }
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
 
   return (
     <motion.div
@@ -320,7 +357,7 @@ export default function InvitationCard() {
             ))}
 
             <h2 className="text-3xl font-bold text-[#0D8A6A] mb-1 relative z-10">Fadhila Aisya Zaviera</h2>
-            <p className="text-gray-500 text-sm relative z-10">Buah hati yang kami cintai karena Allah</p>
+            <p className="text-gray-500 text-sm relative z-10">Putri Kedua, buah hati yang kami cintai karena Allah</p>
           </motion.div>
         </motion.div>
       </div>
@@ -544,7 +581,7 @@ export default function InvitationCard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.3, type: "spring" }}
-          onClick={triggerConfetti}
+          onClick={shareInvitation}
         >
           {/* Button shine effect */}
           <motion.span
@@ -562,6 +599,20 @@ export default function InvitationCard() {
           <Share2 className="h-4 w-4" />
           Bagikan Undangan
         </motion.button>
+
+        {/* Toast notification */}
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-[#0D8A6A] text-white px-4 py-2 rounded-lg shadow-lg z-50"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              {toastMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.div
           className="mt-6 pt-4 border-t border-[#F8F0D7]"
