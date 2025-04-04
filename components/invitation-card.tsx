@@ -488,7 +488,7 @@ export default function InvitationCard() {
           </motion.div>
           <div>
             <h3 className="font-medium text-gray-800">{formatEventTime()}</h3>
-            <p className="text-gray-500 text-sm">Mohon kehadirannya tepat waktu</p>
+            <p className="text-gray-500 text-sm">Kehadiran Anda sangat berarti bagi kami"</p>
           </div>
         </motion.div>
 
