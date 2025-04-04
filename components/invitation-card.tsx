@@ -281,7 +281,7 @@ export default function InvitationCard() {
         <BlobBackground />
 
         <motion.div
-          className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center"
+          className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center pt-5"
           variants={itemVariants}
         >
           <motion.div
@@ -316,11 +316,11 @@ export default function InvitationCard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.5 }}
           >
-            Amanah dan Karunia dari Allah SWT
+            Kelahiran putri kedua kami yang bernama
           </motion.p>
 
           <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg relative overflow-hidden mb-5"
+            className="bg-white/90 backdrop-blur-sm rounded-xl px-4 sm:px-6 py-3 sm:py-4 shadow-lg relative overflow-hidden w-full min-h-[80px] flex flex-col justify-center"
             whileHover={{
               y: -5,
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
@@ -356,8 +356,8 @@ export default function InvitationCard() {
               </motion.div>
             ))}
 
-            <h2 className="text-3xl font-bold text-[#0D8A6A] mb-1 relative z-10">Fadhila Aisya Zaviera</h2>
-            <p className="text-gray-500 text-sm relative z-10">Putri Kedua, buah hati yang kami cintai karena Allah</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0D8A6A] mb-1 relative z-10">Fadhila Aisya Zaviera</h2>
+            <p className="text-gray-500 text-xs sm:text-sm relative z-10 mx-1">Buah hati yang kami cintai karena Allah</p>
           </motion.div>
         </motion.div>
       </div>
