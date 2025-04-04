@@ -15,7 +15,8 @@ const EVENT_DATE = "2025-04-07T10:00:00"
 export default function InvitationCard() {
   const [isOpen, setIsOpen] = useState(false)
   const [activeSection, setActiveSection] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(true) // Start with audio playing
+  const [isPlaying, setIsPlaying] = useState(false) // Start with audio paused
+  const [audioInitialized, setAudioInitialized] = useState(false) // Track if audio has been initialized
   const [showConfetti, setShowConfetti] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -26,17 +27,6 @@ export default function InvitationCard() {
       const audio = new Audio("/soundtrack.mp3")
       audio.loop = true
       audio.preload = "auto"
-
-      // Try to play automatically when loaded
-      audio.addEventListener("canplaythrough", () => {
-        if (isPlaying) {
-          audio.play().catch((err) => {
-            console.log("Autoplay prevented by browser:", err)
-            setIsPlaying(false)
-          })
-        }
-      })
-
       audioRef.current = audio
     }
 
@@ -47,7 +37,7 @@ export default function InvitationCard() {
         audioRef.current = null
       }
     }
-  }, [isPlaying])
+  }, [])
 
   // Handle play/pause
   useEffect(() => {
@@ -75,6 +65,21 @@ export default function InvitationCard() {
 
     return () => clearTimeout(timer)
   }, [])
+
+  // Function to initialize and play audio after user interaction
+  const initializeAndPlayAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true)
+          setAudioInitialized(true)
+        })
+        .catch((error) => {
+          console.log("Playback failed:", error)
+          setIsPlaying(false)
+        })
+    }
+  }
 
   const containerVariants = {
     closed: {
@@ -143,8 +148,30 @@ export default function InvitationCard() {
       animate={isOpen ? "open" : "closed"}
       variants={containerVariants}
     >
-      {/* Islamic patterns */}
       <IslamicPattern />
+      <AnimatePresence>
+        {isOpen && !audioInitialized && (
+          <motion.div
+            className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.button
+              onClick={() => {
+                initializeAndPlayAudio()
+                setIsPlaying(true)
+              }}
+              className="bg-white/90 text-[#0D8A6A] rounded-full p-8 shadow-lg flex flex-col items-center justify-center w-64 h-64"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-2xl text-center">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيْمِ</span>
+              <span className="mt-3 text-sm">Tekan untuk mulai</span>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Confetti animation */}
       <AnimatePresence>
@@ -155,50 +182,62 @@ export default function InvitationCard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {[...Array(50)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  top: "-5%",
-                  left: `${Math.random() * 100}%`,
-                  background: i % 3 === 0 ? "#0D8A6A" : i % 3 === 1 ? "#C19434" : "#F8F0D7",
-                }}
-                initial={{ y: 0, opacity: 1 }}
-                animate={{
-                  y: `${100 + Math.random() * 50}%`,
-                  x: `${(Math.random() - 0.5) * 200}%`,
-                  opacity: 0,
-                  rotate: Math.random() * 360,
-                }}
-                transition={{
-                  duration: 2 + Math.random() * 2,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
+            {Array.from({ length: 50 }).map((_, i) => {
+              // Use deterministic values based on index instead of Math.random()
+              const left = `${(i % 10) * 10 + 5}%`;
+              const yOffset = `${100 + (i % 5) * 10}%`;
+              const xOffset = `${((i % 7) - 3) * 25}%`;
+              const rotationDeg = (i * 36) % 360;
+              const duration = 2 + (i % 5) * 0.5;
+              const bgColor = i % 3 === 0 ? "#0D8A6A" : i % 3 === 1 ? "#C19434" : "#F8F0D7";
+
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-full"
+                  style={{
+                    top: "-5%",
+                    left: left,
+                    background: bgColor,
+                  }}
+                  initial={{ y: 0, opacity: 1 }}
+                  animate={{
+                    y: yOffset,
+                    x: xOffset,
+                    opacity: 0,
+                    rotate: rotationDeg,
+                  }}
+                  transition={{
+                    duration: duration,
+                    ease: "easeOut",
+                  }}
+                />
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Simple music toggle button */}
-      <motion.div
-        className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, type: "spring" }}
-      >
-        <motion.button
-          onClick={toggleMusic}
-          className="flex items-center justify-center"
-          whileHover={{ scale: 1.1, rotate: [0, 10, -10, 0] }}
-          whileTap={{ scale: 0.9 }}
-          aria-label={isPlaying ? "Pause music" : "Play music"}
+      {/* Simple music toggle button - only visible after music is initialized */}
+      {audioInitialized && (
+        <motion.div
+          className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-md"
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, type: "spring" }}
         >
-          {isPlaying ? <Music2 className="h-5 w-5 text-[#0D8A6A]" /> : <Music className="h-5 w-5 text-[#0D8A6A]" />}
-        </motion.button>
-      </motion.div>
+          <motion.button
+            onClick={toggleMusic}
+            className="flex items-center justify-center"
+            whileHover={{ scale: 1.1, rotate: [0, 10, -10, 0] }}
+            whileTap={{ scale: 0.9 }}
+            aria-label={isPlaying ? "Pause music" : "Play music"}
+          >
+            {isPlaying ? <Music2 className="h-5 w-5 text-[#0D8A6A]" /> : <Music className="h-5 w-5 text-[#0D8A6A]" />}
+          </motion.button>
+        </motion.div>
+      )}
 
       {/* Header with modern design */}
       <div className="relative h-64 overflow-hidden">
@@ -221,7 +260,7 @@ export default function InvitationCard() {
                 boxShadow: "0 0 15px rgba(13, 138, 106, 0.5)",
               }}
             >
-              بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+              بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيْم
             </motion.span>
           </motion.div>
 
@@ -308,7 +347,7 @@ export default function InvitationCard() {
             transition={{ delay: 1.3, type: "spring" }}
           >
             <h3 className="font-medium text-[#0D8A6A] text-lg">Bapak Rustan</h3>
-            <p className="text-xs text-gray-500">bin Abdullah</p>
+
           </motion.div>
 
           <motion.div
@@ -342,7 +381,6 @@ export default function InvitationCard() {
             transition={{ delay: 1.3, type: "spring" }}
           >
             <h3 className="font-medium text-[#0D8A6A] text-lg">Ibu Niswah</h3>
-            <p className="text-xs text-gray-500">binti Ahmad</p>
           </motion.div>
         </div>
       </motion.div>
@@ -436,8 +474,13 @@ export default function InvitationCard() {
           <div>
             <h3 className="font-medium text-gray-800">Lokasi Acara</h3>
             <p className="text-gray-500 text-sm">Jl. A. Palili (Sebelum Puncak Mattugengkeng)</p>
-            <Button variant="link" className="p-0 h-auto text-[#0D8A6A] text-sm mt-1 group">
-              <span className="inline-block group-hover:translate-x-1 transition-transform">Lihat di Peta</span>
+            <Button
+              variant="link"
+              className="p-0 h-auto text-[#0D8A6A] text-sm mt-1 group"
+              onClick={() => window.open("https://www.google.com/maps/place/3%C2%B042'19.4%22S+120%C2%B024'47.0%22E/@-3.7053852,120.4104805,17z/data=!4m4!3m3!8m2!3d-3.7053852!4d120.4130554?entry=ttu&g_ep=EgoyMDI1MDQwMS4wIKXMDSoASAFQAw%3D%3D", "_blank")}
+            >
+              <span
+                className="inline-block group-hover:translate-x-1 transition-transform">Lihat di Peta</span>
             </Button>
           </div>
         </motion.div>

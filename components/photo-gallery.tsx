@@ -1,22 +1,38 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, useMotionValue } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Gallery images including the new baby photo
+// Gallery images including the new babyphoto
 const images = [
   "/images/baby-photo.jpg",
-  "/placeholder.svg?height=300&width=300",
-  "/placeholder.svg?height=300&width=300",
-  "/placeholder.svg?height=300&width=300",
+  "/images/baby-photo2.jpg",
+  "/images/baby-photo3.jpg",
+  "/images/baby-photo4.jpg",
 ]
 
 export default function PhotoGallery() {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [autoPlay, setAutoPlay] = useState(true)
   const constraintsRef = useRef(null)
   const x = useMotionValue(0)
+
+  // Auto rotation effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (autoPlay) {
+      interval = setInterval(() => {
+        goToNext();
+      }, 3000); // Change image every 3 seconds
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currentIndex, autoPlay]);
 
   const goToPrevious = () => {
     const isFirstSlide = currentIndex === 0
@@ -34,7 +50,7 @@ export default function PhotoGallery() {
     setCurrentIndex(slideIndex)
   }
 
-  const handleDragEnd = (_, info) => {
+  const handleDragEnd = (_: any, info: { offset: { x: number } }) => {
     if (info.offset.x > 100) {
       goToPrevious()
     } else if (info.offset.x < -100) {
@@ -44,7 +60,7 @@ export default function PhotoGallery() {
 
   return (
     <motion.div
-      className="relative w-full h-72 mb-2"
+      className="relative w-full h-[450px] mb-2"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
@@ -60,6 +76,8 @@ export default function PhotoGallery() {
           onDragEnd={handleDragEnd}
           style={{ x }}
           className="w-full h-full cursor-grab active:cursor-grabbing"
+          onMouseEnter={() => setAutoPlay(false)}
+          onMouseLeave={() => setAutoPlay(true)}
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -124,7 +142,7 @@ export default function PhotoGallery() {
       </motion.button>
 
       {/* Dots indicator with modern styling */}
-      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+      <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {images.map((_, slideIndex) => (
           <motion.button
             key={slideIndex}

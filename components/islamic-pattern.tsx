@@ -1,8 +1,28 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useMemo } from "react"
+
+// Create fixed positions for the patterns to avoid hydration errors
+const FIXED_POSITIONS = [
+  { top: "12.7%", left: "27.7%" },
+  { top: "81.4%", left: "23.2%" },
+  { top: "75.7%", left: "84.4%" },
+  { top: "68.7%", left: "16.3%" },
+  { top: "99.0%", left: "17.8%" },
+  { top: "34.6%", left: "18.1%" },
+]
 
 export default function IslamicPattern() {
+  // Use useMemo to ensure consistent patterns between renders
+  const patterns = useMemo(() => {
+    return FIXED_POSITIONS.map((position, i) => ({
+      ...position,
+      rotate: i % 2 === 0 ? 360 : -360,
+      duration: 20 + i * 5,
+    }))
+  }, [])
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-10">
       {/* Top right corner pattern */}
@@ -36,22 +56,22 @@ export default function IslamicPattern() {
       </motion.div>
 
       {/* Scattered small patterns */}
-      {[...Array(6)].map((_, i) => (
+      {patterns.map((pattern, i) => (
         <motion.div
           key={i}
           className="absolute w-8 h-8 opacity-20"
           style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
+            top: pattern.top,
+            left: pattern.left,
           }}
           initial={{ rotate: 0, scale: 0.5 }}
           animate={{
-            rotate: i % 2 === 0 ? 360 : -360,
+            rotate: pattern.rotate,
             scale: [0.5, 0.7, 0.5],
             y: [0, -10, 0],
           }}
           transition={{
-            duration: 20 + i * 5,
+            duration: pattern.duration,
             repeat: Number.POSITIVE_INFINITY,
             ease: "linear",
             y: {
