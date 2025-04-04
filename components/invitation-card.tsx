@@ -152,7 +152,7 @@ export default function InvitationCard() {
       <AnimatePresence>
         {isOpen && !audioInitialized && (
           <motion.div
-            className="absolute inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            className="fixed top-0 left-0 right-0 bottom-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -162,7 +162,7 @@ export default function InvitationCard() {
                 initializeAndPlayAudio()
                 setIsPlaying(true)
               }}
-              className="bg-white/90 text-[#0D8A6A] rounded-full p-8 shadow-lg flex flex-col items-center justify-center w-64 h-64"
+              className="bg-white/90 text-[#0D8A6A] rounded-full p-8 shadow-lg flex flex-col items-center justify-center w-64 h-64 mt-[-15vh]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
