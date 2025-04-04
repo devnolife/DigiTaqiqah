@@ -116,7 +116,7 @@ export default function InvitationCard() {
   // Format the event date for display
   const formatEventDate = () => {
     const date = new Date(EVENT_DATE)
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("id-ID", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -283,7 +283,7 @@ export default function InvitationCard() {
           </motion.p>
 
           <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg relative overflow-hidden"
+            className="bg-white/90 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg relative overflow-hidden mb-5"
             whileHover={{
               y: -5,
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
